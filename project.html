@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Rock Paper Scissors</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #111126, #30245c);
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 650px;
+            padding: 35px;
+            background: #1c1b35;
+            border: 1px solid #514a7c;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #aaa6c8;
+            margin-bottom: 30px;
+        }
+
+        .scores {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            margin-bottom: 35px;
+        }
+
+        .score {
+            background: #302d50;
+            padding: 15px;
+            border-radius: 12px;
+            flex: 1;
+        }
+
+        .score h2 {
+            font-size: 30px;
+            margin: 8px 0;
+        }
+
+        .choices {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .choice {
+            background: #6554c8;
+            color: white;
+            padding: 20px;
+            min-width: 120px;
+        }
+
+        .choice span {
+            display: block;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #8673ed;
+            transform: translateY(-3px);
+        }
+
+        .battle {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 35px;
+            gap: 15px;
+        }
+
+        .player {
+            background: #292644;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .icon {
+            font-size: 55px;
+            margin: 10px;
+        }
+
+        #message {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 25px 0;
+            min-height: 25px;
+        }
+
+        .reset {
+            padding: 12px 22px;
+            background: #393653;
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            .choice {
+                min-width: 90px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Rock Paper Scissors</h1>
+
+    <p class="subtitle">
+        Choose your move and compete against the computer.
+    </p>
+
+    <div class="scores">
+
+        <div class="score">
+            You
+            <h2 id="player-score">0</h2>
+        </div>
+
+        <div class="score">
+            Ties
+            <h2 id="ties">0</h2>
+        </div>
+
+        <div class="score">
+            Computer
+            <h2 id="computer-score">0</h2>
+        </div>
+
+    </div>
+
+    <h2>Choose your move</h2>
+
+    <div class="choices">
+
+        <button class="choice" onclick="play('rock')">
+            <span>✊</span>
+            Rock
+        </button>
+
+        <button class="choice" onclick="play('paper')">
+            <span>✋</span>
+            Paper
+        </button>
+
+        <button class="choice" onclick="play('scissors')">
+            <span>✌️</span>
+            Scissors
+        </button>
+
+    </div>
+
+    <div class="battle">
+
+        <div class="player">
+            <h3>You</h3>
+            <div class="icon" id="player-icon">❔</div>
+            <p id="player-move">Waiting...</p>
+        </div>
+
+        <div class="player">
+            <h3>Computer</h3>
+            <div class="icon" id="computer-icon">❔</div>
+            <p id="computer-move">Waiting...</p>
+        </div>
+
+    </div>
+
+    <p id="message">
+        Pick a move to begin!
+    </p>
+
+    <button class="reset" onclick="resetGame()">
+        Reset Score
+    </button>
+
+</div>
+
+<script>
+
+    async function play(move) {
+
+        const response = await fetch("/play", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                move: move
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            document.getElementById("message").textContent =
+                data.error;
+            return;
+        }
+
+        document.getElementById("player-icon").textContent =
+            data.player_icon;
+
+        document.getElementById("computer-icon").textContent =
+            data.computer_icon;
+
+        document.getElementById("player-move").textContent =
+            data.player;
+
+        document.getElementById("computer-move").textContent =
+            data.computer;
+
+        document.getElementById("message").textContent =
+            data.message;
+
+        document.getElementById("player-score").textContent =
+            data.player_score;
+
+        document.getElementById("computer-score").textContent =
+            data.computer_score;
+
+        document.getElementById("ties").textContent =
+            data.ties;
+    }
+
+
+    async function resetGame() {
+
+        const response = await fetch("/reset", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        document.getElementById("player-score").textContent =
+            data.player_score;
+
+        document.getElementById("computer-score").textContent =
+            data.computer_score;
+
+        document.getElementById("ties").textContent =
+            data.ties;
+
+        document.getElementById("player-icon").textContent = "❔";
+        document.getElementById("computer-icon").textContent = "❔";
+
+        document.getElementById("player-move").textContent =
+            "Waiting...";
+
+        document.getElementById("computer-move").textContent =
+            "Waiting...";
+
+        document.getElementById("message").textContent =
+            "Score reset!";
+
+    }
+
+</script>
+
+</body>
+</html>
